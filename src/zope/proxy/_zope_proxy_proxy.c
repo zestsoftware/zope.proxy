@@ -215,17 +215,21 @@ WrapperType_Lookup(PyTypeObject *type, PyObject *name)
 
         if (((PyTypeObject *)base) != &ProxyType) {
 #if PY_MAJOR_VERSION < 3
-            if (PyClass_Check(base))
-                dict = ((PyClassObject *)base)->cl_dict;
+            if (PyClass_Check(base)) {
+                //dict = ((PyClassObject *)base)->cl_dict;
+                dict = GetAttrString(base, "__dict__");
+            }
             else
 #endif
             {
                 assert(PyType_Check(base));
                 dict = ((PyTypeObject *)base)->tp_dict;
+                Py_INCREF(dict);
             }
 
             assert(dict && PyDict_Check(dict));
             res = PyDict_GetItem(dict, name);
+            Py_DECREF(dict);
             if (res != NULL)
                 return res;
         }
